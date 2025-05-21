@@ -86,24 +86,43 @@ int my_thread_detach(my_thread_t thread) {
 }
 
 int my_mutex_init(my_mutex_t *mutex) {
-    // TODO: Inicializar el mutex
+    if (!mutex) return -1;
+    mutex->locked = 0;
+    mutex->owner = -1;
     return 0;
 }
+
 
 int my_mutex_destroy(my_mutex_t *mutex) {
-    // TODO: Destruir el mutex
+    if (!mutex) return -1;
+    mutex->locked = 0;
+    mutex->owner = -1;
     return 0;
 }
+
 
 int my_mutex_lock(my_mutex_t *mutex) {
-    // TODO: Bloquear el mutex
+    if (!mutex) return -1;
+
+    while (__sync_lock_test_and_set(&mutex->locked, 1)) {
+        // Ya está bloqueado, ceder turno (cooperativamente)
+        my_thread_yield();
+    }
+
+    // Éxito al adquirirlo
+    mutex->owner = current_thread_id;
     return 0;
 }
 
+
 int my_mutex_unlock(my_mutex_t *mutex) {
-    // TODO: Desbloquear el mutex
+    if (!mutex || mutex->owner != current_thread_id) return -1;
+
+    mutex->owner = -1;
+    __sync_lock_release(&mutex->locked);
     return 0;
 }
+
 
 int my_mutex_trylock(my_mutex_t *mutex) {
     // TODO: Intentar bloquear el mutex sin bloquearse
