@@ -20,6 +20,7 @@ void my_thread_yield();
 int my_thread_join(my_thread_t thread);
 int my_thread_detach(my_thread_t thread);
 
+
 // Mutex functions
 int my_mutex_init(my_mutex_t *mutex);
 int my_mutex_destroy(my_mutex_t *mutex);
@@ -44,6 +45,7 @@ typedef struct {
     void *retval;
     int scheduler_type;
     char stack[STACK_SIZE];
+    int waiting_thread_id;  // -1 si nadie lo espera, si no, guarda el ID del que hizo join
 } thread_control_block;
 
 extern thread_control_block thread_table[MAX_THREADS];
