@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <unistd.h> // Para sleep()
+#include <unistd.h> 
 #include "animation.h"
 
 void print_canvas(Animation* anim) {
