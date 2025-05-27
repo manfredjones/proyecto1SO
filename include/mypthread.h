@@ -46,6 +46,7 @@ typedef struct {
     int scheduler_type;
     char stack[STACK_SIZE];
     int waiting_thread_id;  // -1 si nadie lo espera, si no, guarda el ID del que hizo join
+    int detached;  // 1 si es detach, 0 por defecto
 } thread_control_block;
 
 extern thread_control_block thread_table[MAX_THREADS];

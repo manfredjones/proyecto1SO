@@ -1,4 +1,3 @@
-
 #include "mypthread.h"
 #include "scheduler.h"
 #include <ucontext.h>
@@ -34,6 +33,7 @@ int my_thread_create(my_thread_t *thread, void (*start_routine)(void), int sched
     tcb->state = READY;
     tcb->retval = NULL;
     tcb->scheduler_type = scheduler_type;
+    tcb->detached = 0;
 
     *thread = id;
     thread_count++;
@@ -47,6 +47,13 @@ int my_thread_create(my_thread_t *thread, void (*start_routine)(void), int sched
 void my_thread_end() {
     thread_control_block *current = &thread_table[current_thread_id];
     current->state = FINISHED;
+    if (current->detached) {
+    // En una versión más realista se liberarían recursos,
+    // pero como estamos en espacio de usuario, no es necesario ahora.
+    // Solo evitamos que nadie lo espere.
+    current->waiting_thread_id = -1;
+}
+
 
     // Si alguien está esperando a este hilo, desbloquearlo
     if (current->waiting_thread_id != -1) {
@@ -107,10 +114,12 @@ int my_thread_join(my_thread_t thread_id) {
     return 0;
 }
 
+int my_thread_detach(my_thread_t thread_id) {
+    if (thread_id < 0 || thread_id >= thread_count)
+        return -1;
 
-
-int my_thread_detach(my_thread_t thread) {
-    // TODO: Marcar un hilo como detach
+    thread_control_block *tcb = &thread_table[thread_id];
+    tcb->detached = 1;
     return 0;
 }
 
@@ -155,6 +164,9 @@ int my_mutex_trylock(my_mutex_t *mutex) {
 }
 
 int my_thread_chsched(my_thread_t thread, int scheduler_type) {
-    // TODO: Cambiar el scheduler de un hilo
+    if (thread < 0 || thread >= thread_count)
+        return -1;
+
+    thread_table[thread].scheduler_type = scheduler_type;
     return 0;
 }

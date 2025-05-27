@@ -22,6 +22,7 @@ void scheduler_add(my_thread_t thread) {
 }
 
 my_thread_t scheduler_next() {
+    // TODO: adaptar lógica de Lottery y Real-Time del folder reference_schedulers/
     int tries = 0;
     while (tries < thread_count) {
         rr_index = (rr_index + 1) % thread_count;
