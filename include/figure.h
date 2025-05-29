@@ -1,15 +1,17 @@
-
 #ifndef FIGURE_H
 #define FIGURE_H
 
 typedef struct {
     int id;
     int x, y;
-    int dx, dy; // dirección del movimiento
+    int dx, dy; // Dirección del movimiento
     char symbol;
 } Figure;
 
+// Actualiza la posición de la figura considerando los límites
 void figure_move(Figure *fig, int maxWidth, int maxHeight);
-int figure_collides(Figure *a, Figure *b);
+
+// Verifica si dos figuras colisionan
+int figure_collides(const Figure *a, const Figure *b);
 
 #endif // FIGURE_H
