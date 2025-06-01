@@ -4,6 +4,6 @@
 #include "animation.h"
 #include "figure.h"
 
-Figure object_to_figure(const Object *obj);
+Figure* object_to_figure(const Object *obj);
 
 #endif

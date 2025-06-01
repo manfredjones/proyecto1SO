@@ -16,13 +16,14 @@ int main() {
         }
     };
 
-    Figure fig = object_to_figure(&obj);
+    Figure* fig = object_to_figure(&obj);
+
 
     printf("Figura convertida:\n");
-    printf("Label: %s\n", fig.label);
-    printf("Símbolo: %c\n", fig.symbol);
-    printf("Posición: (%d, %d)\n", fig.x, fig.y);
-    printf("Movimiento: dx = %d, dy = %d\n", fig.dx, fig.dy);
+    printf("Label: %s\n", fig->label);
+    printf("Símbolo: %c\n", fig->symbol);
+    printf("Posición: (%d, %d)\n", fig->x, fig->y);
+    printf("Movimiento: dx = %d, dy = %d\n", fig->dx, fig->dy);
 
     return 0;
 }

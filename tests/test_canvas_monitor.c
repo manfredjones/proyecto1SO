@@ -5,6 +5,7 @@
 #include "../include/scheduler.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 Monitor globalMonitor;
 Canvas globalCanvas;
@@ -13,6 +14,7 @@ void monitor_loop() {
     for (int t = 0; t <= 5; t++) {
         monitor_draw(&globalMonitor, t);
         my_thread_yield(); // cede el control
+        sleep(1); 
     }
     my_thread_end();
 }

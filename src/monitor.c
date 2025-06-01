@@ -15,6 +15,7 @@ void monitor_init(Monitor *mon, int x0, int y0, int x1, int y1, Canvas *canvas) 
 
 void monitor_draw(Monitor *mon, int current_time) {
     my_mutex_lock(&mon->mutex);
+    printf("\033[H\033[J");  // borra la terminal
     printf("Monitor (%d,%d) - (%d,%d) at time %d:\n", mon->x0, mon->y0, mon->x1, mon->y1, current_time);
     for (int i = 0; i < mon->canvas->figure_count; i++) {
         Figure *f = mon->canvas->figures[i];

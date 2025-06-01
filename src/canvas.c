@@ -18,6 +18,12 @@ void canvas_add_monitor(Canvas *canvas, Monitor *mon) {
 }
 
 void canvas_update(Canvas *canvas, int current_time) {
+    for (int i = 0; i < canvas->figure_count; i++) {
+        Figure *f = canvas->figures[i];
+        f->x += f->dx;
+        f->y += f->dy;
+    }
+
     for (int i = 0; i < canvas->monitor_count; i++) {
         monitor_draw(canvas->monitors[i], current_time);
     }
