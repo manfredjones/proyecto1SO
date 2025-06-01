@@ -3,6 +3,22 @@
 #include <string.h>
 #include <unistd.h>
 #include "animation.h"
+#include "parser.h"
+
+Figure object_to_figure(const Object *obj) {
+    Figure *fig = malloc(sizeof(Figure));
+    if (!fig) return NULL;
+
+    strncpy(fig->label, obj->label, sizeof(fig->label));
+    fig->x = obj->x;
+    fig->y = obj->y;
+    fig->dx = obj->dx;
+    fig->dy = obj->dy;
+    fig->start_time = obj->start_time;
+    fig->end_time = obj->end_time;
+
+    return fig;
+}
 
 void parse_animation(const char* filename, Animation* anim) {
     FILE* file = fopen(filename, "r");

@@ -1,11 +1,14 @@
 #ifndef FIGURE_H
 #define FIGURE_H
 
+#include <animation.h>
+
 typedef struct {
     int id;
     int x, y;
-    int dx, dy; // Dirección del movimiento
+    int dx, dy;
     char symbol;
+    char label[32];
 } Figure;
 
 // Actualiza la posición de la figura considerando los límites

@@ -15,6 +15,7 @@ all: $(BIN)
 
 $(BIN): $(OBJECTS)
 	@mkdir -p $(dir $@)
+	cp $(SRC_DIR)/animation.ani $(BUILD_DIR)/animation.ani
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
@@ -26,3 +27,4 @@ run: all
 
 clean:
 	rm -rf $(BUILD_DIR)
+
