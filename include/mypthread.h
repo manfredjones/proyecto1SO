@@ -51,5 +51,7 @@ typedef struct {
 
 extern thread_control_block thread_table[MAX_THREADS];
 extern int thread_count;
+extern my_thread_t current_thread_id;
+
 
 #endif // MYPTHREAD_H
