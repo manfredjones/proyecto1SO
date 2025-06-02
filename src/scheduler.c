@@ -87,6 +87,6 @@ void scheduler_run() {
         setcontext(&thread_table[next_id].context);
     }
 
-    printf("Todos los hilos han terminado.\n");
+    //printf("Todos los hilos han terminado.\n");
 }
 
