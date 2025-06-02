@@ -1,0 +1,688 @@
+\documentclass[12pt]{article} 
+
+\usepackage[margin=1in]{geometry} 
+\usepackage[superscript]{cite}
+\usepackage[spanish]{babel}
+
+
+
+
+\usepackage[utf8]{inputenc}
+\usepackage{float}
+\usepackage{indentfirst}
+\usepackage{hyperref}
+\usepackage{array}
+\usepackage[table]{xcolor}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=blue,
+    citecolor=blue,
+}
+
+\usepackage{graphicx}
+\usepackage{graphics}
+
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{xcolor}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\date{}
+
+
+\lstset{frame=tb,
+  language=Python,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+
+\setlength{\tabcolsep}{.5cm}
+\usepackage{amssymb}
+%-------------------------------------------------------
+
+\title{\textbf{{\huge Proyecto \#1}\\[15pt]MultiDisplay Animator}}
+\author{Manfred Jones Sanabria - 2022176476\\[10pt]Miguel Sánchez Sánchez - 2019061555}
+
+
+
+
+%-------------------------------------------------------
+
+\begin{document}
+
+%----------------------------------------Inicio Portada
+
+\begin{figure}[t!]
+   \centering
+   \includegraphics[width=2in]{logo-tec.png} 
+   \label{fig:1}
+\end{figure}
+
+\begingroup
+\centering
+\textbf{Instituto Tecnológico de Costa Rica\\Escuela de Ingeniería en Computación\\}
+\endgroup
+
+\hfill\authors
+
+{\let\newpage\relax\maketitle}
+
+
+\begingroup
+\centering
+\large
+Prof. Kevin Moraga Garcia
+\\[20pt]\par
+\endgroup
+
+\begingroup
+\centering
+\large
+IC6600
+\\[20pt]\par
+\endgroup
+
+\begingroup
+\centering
+\large
+Principios de Sistemas Operativos\\ 
+\\[20pt]\par
+\endgroup
+
+\begingroup
+\centering
+\large
+Semestre 1
+\\[20pt]\par
+\endgroup
+
+\begingroup
+\centering
+\large
+\date{01 de junio de 2025} 
+\\[20pt]\par
+\endgroup
+
+\vspace*{\fill}
+\newpage
+
+%----------------------------------------Final Portada
+
+\section{Introducción}
+
+
+El objetivo del proyecto es lograr hacer uso de hilos y \textit{schedulers} para coordinar movimientos de figuras en un \textit{canvas}, a la vez que se re-implementa la biblioteca \texttt{mypthreads}.
+
+Para lograrlo, se implementarán las siguientes bases del proyecto:
+
+\begin{itemize}
+    \item \textbf{Lenguaje descriptivo de la animación:} un archivo contendrá las instrucciones de lo que sucederá en el \textit{canvas}, indicando los monitores, las figuras, los movimientos, el tiempo y demás información importante para lograr la animación.
+    
+    \item \textbf{Hilos para el manejo de las figuras:} cada figura se manejará por medio de un hilo, el cual leerá las instrucciones del lenguaje de animación, ejecutará el movimiento correspondiente, evitará colisiones y cumplirá los tiempos.
+    
+    \item \textbf{Control de colisiones y espacio:} para verificar que no ocurran colisiones en el \textit{canvas}, cada hilo correspondiente a una figura deberá asegurarse de que el espacio al que se moverá no esté ocupado por otra. Si dicho espacio está ocupado, el hilo deberá esperar a que se desocupe para realizar el movimiento o desaparecerá ``explotando'', esto con el uso de semáforos y \textit{mutex}.
+    
+    \item \textbf{Canvas y monitores:} el \textit{canvas} será el área donde se mueven las figuras y este, mediante una indicación del lenguaje de la animación, deberá poder cambiar de tamaño y distribuirse en diversas secciones que llamaremos \textit{monitores} que pueden estar en distintas computadoras.
+    
+    \item \textbf{Distribución y sockets:} los \textit{sockets} se utilizarán para la comunicación y sincronización entre los diferentes monitores en el sistema distribuido. Las máquinas compartirán y podrán acceder a la información de posición de los objetos en el \textit{canvas} para evitar colisiones. Cada monitor cuenta con su propio hilo, y se coordinan mediante los semáforos o \textit{mutex}.
+    
+    \item \textbf{Schedulers:} los \textit{schedulers} se usarán para priorizar los hilos del programa. Habrá tres tipos: \textit{RoundRobin} (predeterminado), sorteo y tiempo real. El \textit{scheduler} a usar deberá ser seleccionado al momento de iniciar la ejecución del programa; si no, se asignará el predeterminado.
+\end{itemize}
+
+
+
+\section{Ambiente de desarrollo}
+
+
+
+\subsection{Lenguaje de programación}
+El proyecto se desarrollará utilizando el lenguaje de programación C. 
+
+\subsection{Sistema operativo: Linux}
+El desarrollo se llevará a cabo en un entorno Linux/GNU. Las herramientas y bibliotecas estándar de Unix son ampliamente compatibles con Linux, lo que facilita la implementación de servidores y la administración de procesos.
+
+\subsection{Biblioteca \texttt{mypthreads} (pthreads)}
+Se utilizará una reemplementación de la biblioteca \texttt{pthread} y sus diferentes para crear y gestionar hilos de ejecución. 
+
+% \subsection{Biblioteca CURL}
+% La biblioteca \texttt{curl} se utilizará para implementar el cliente HTTP que descargará archivos desde el servidor. \texttt{curl} es una herramienta estándar para realizar transferencias de datos usando protocolos como HTTP, FTP, entre otros. Se empleará en el desarrollo del cliente que interactúa con el servidor HTTP.
+
+\subsection{GCC}
+El compilador estándar de C en Linux, utilizado para compilar el código fuente.
+  
+
+
+
+\subsection{VS Code}
+Se utilizará para escribir y editar el código fuente y otros archivos.
+
+
+
+
+
+\section{Estructuras de datos usadas y funciones}
+
+
+\subsection{Módulo \texttt{mypthreads}}
+
+
+
+El módulo \texttt{mypthread} implementa una librería de hilos cooperativos en espacio de usuario, utilizando la biblioteca \texttt{ucontext.h}. Se simula una API similar a \texttt{pthread}, con funciones para crear hilos, hacer yield, join, detach y manejo de mutex. El código se divide en dos archivos principales:
+
+\begin{itemize}
+    \item \texttt{mypthread.h}: Contiene las definiciones y prototipos.
+    \item \texttt{mypthread.c}: Contiene la implementación de la lógica de manejo de hilos y mutexes.
+\end{itemize}
+
+\subsubsection*{Definición de tipos y estructuras}
+
+\begin{itemize}
+    \item \texttt{my\_thread\_t}: Identificador entero para los hilos.
+    \item \texttt{my\_mutex\_t}: Estructura simple con bandera de bloqueo y dueño.
+    \item \texttt{thread\_state}: Enum para los estados del hilo (READY, RUNNING, FINISHED, BLOCKED).
+    \item \texttt{thread\_control\_block}: Representa el contexto y estado de cada hilo.
+\end{itemize}
+
+\subsubsection*{Funciones principales}
+
+\paragraph{\texttt{my\_thread\_create()}} Inicializa el contexto del nuevo hilo, configura su stack, lo marca como READY y lo agrega al scheduler.
+
+\paragraph{\texttt{my\_thread\_end()}} Termina el hilo actual. Si hay un hilo en \texttt{join}, lo despierta. Pasa el control al siguiente hilo del scheduler.
+
+\paragraph{\texttt{my\_thread\_yield()}} Cede voluntariamente el control al siguiente hilo listo.
+
+\paragraph{\texttt{my\_thread\_join()}} Bloquea el hilo actual hasta que el hilo objetivo finalice.
+
+\paragraph{\texttt{my\_thread\_detach()}} Marca el hilo como detached, lo que evita que otros hilos lo puedan unir.
+
+\paragraph{\texttt{my\_mutex\_init()}, \texttt{lock()}, \texttt{unlock()}, \texttt{trylock()}, \texttt{destroy()}} Funciones para manejo básico de exclusión mutua cooperativa usando spinlock y \texttt{yield()} para evitar espera activa prolongada.
+
+\paragraph{\texttt{my\_thread\_chsched()}} Cambia el tipo de scheduler asociado a un hilo. Esto puede ser útil si se implementan múltiples políticas de planificación.
+
+\subsubsection*{Stack y tabla de hilos}
+
+Cada hilo cuenta con su propio stack de tamaño fijo definido por \texttt{STACK\_SIZE}. Todos los hilos se almacenan en una tabla global \texttt{thread\_table[MAX\_THREADS]}, donde se guarda su contexto, estado y otra información necesaria.
+
+
+
+
+
+
+\subsection{Módulo de \texttt{scheduler}}
+
+El módulo \texttt{scheduler} es responsable de administrar la selección del siguiente hilo a ejecutar. Soporta múltiples políticas de planificación que pueden ser asignadas a los hilos: \texttt{ROUND\_ROBIN}, \texttt{LOTTERY}, y \texttt{REAL\_TIME}.
+
+\subsubsection*{Tipos de Schedulers}
+
+\begin{itemize}
+    \item \textbf{ROUND\_ROBIN}: Se recorren los hilos de forma circular, otorgando turnos iguales a cada hilo con esta política.
+    \item \textbf{LOTTERY}: Se asignan "boletos" de lotería virtuales a los hilos, y se elige uno al azar ponderado por dichos boletos.
+    \item \textbf{REAL\_TIME}: Siempre se selecciona el hilo \texttt{READY} con el menor identificador (\texttt{id}), priorizando respuestas rápidas.
+\end{itemize}
+
+\subsubsection*{Estructura \texttt{Scheduler}}
+
+\begin{lstlisting}[language=C]
+typedef struct {
+    SchedulerType type;
+    my_thread_t *queue;
+    int count;
+} Scheduler;
+\end{lstlisting}
+
+Contiene el tipo de scheduler activo, una cola (no utilizada completamente en esta versión), y un contador de hilos registrados.
+
+\subsubsection*{Funciones principales}
+
+\begin{itemize}
+    \item \texttt{void scheduler\_init(SchedulerType type)}: Inicializa el planificador con el tipo especificado.
+    
+
+
+    \item \texttt{my\_thread\_t scheduler\_next()}: Selecciona el próximo hilo a ejecutar según el tipo de planificador. Verifica el estado y el tipo de planificación de cada hilo.
+
+    \item \texttt{void scheduler\_run()}: Ejecuta en bucle el planificador hasta que no haya más hilos \texttt{READY}, usando \texttt{setcontext} para cambiar al hilo siguiente.
+\end{itemize}
+
+\subsubsection*{Algoritmo ROUND\_ROBIN}
+
+Se utiliza un índice global \texttt{rr\_index} para recorrer los hilos de forma cíclica. Si el hilo está \texttt{READY} y es del tipo \texttt{ROUND\_ROBIN}, se selecciona.
+
+\subsubsection*{Algoritmo LOTTERY}
+
+Cada hilo \texttt{READY} recibe una cantidad de boletos proporcional a su identificador. Se genera un número aleatorio y se selecciona el hilo correspondiente al rango donde cae dicho número.
+
+\subsubsection*{Algoritmo REAL\_TIME}
+
+Se busca el hilo \texttt{READY} con el identificador más bajo, simulando una política de prioridad fija simple.
+
+
+
+
+\subsection{Módulo \texttt{canvas}}
+
+El módulo \texttt{canvas} define el lienzo principal donde se colocan y actualizan las figuras animadas. También permite registrar múltiples monitores virtuales que observan distintas regiones del lienzo en distintos tiempos.
+
+\subsubsection*{Estructura \texttt{Canvas}}
+
+\begin{lstlisting}[language=C]
+#define MAX_FIGURES 100
+#define MAX_MONITORS 10
+
+typedef struct Canvas {
+    int width, height;
+    Figure *figures[MAX_FIGURES];
+    int figure_count;
+    struct Monitor *monitors[MAX_MONITORS]; 
+    int monitor_count;
+} Canvas;
+\end{lstlisting}
+
+\begin{itemize}
+    \item \texttt{width, height}: Dimensiones del lienzo.
+    \item \texttt{figures}: Arreglo de punteros a figuras activas.
+    \item \texttt{figure\_count}: Cantidad de figuras activas.
+    \item \texttt{monitors}: Arreglo de punteros a monitores registrados.
+    \item \texttt{monitor\_count}: Número de monitores.
+\end{itemize}
+
+\subsubsection*{Funciones Principales}
+
+\begin{itemize}
+    \item \texttt{void canvas\_init(Canvas *canvas, int width, int height)}\\
+    Inicializa un lienzo con dimensiones específicas, sin figuras ni monitores.
+
+    \item \texttt{void canvas\_add\_figure(Canvas *canvas, Figure *fig)}\\
+    Añade una figura al lienzo si no se ha alcanzado el máximo (\texttt{MAX\_FIGURES}).
+
+    \item \texttt{void canvas\_add\_monitor(Canvas *canvas, Monitor *mon)}\\
+    Añade un monitor al lienzo si no se ha alcanzado el máximo (\texttt{MAX\_MONITORS}).
+
+    \item \texttt{void canvas\_update(Canvas *canvas, int current\_time)}\\
+    Actualiza las posiciones de todas las figuras activas (según su intervalo de tiempo) usando \texttt{figure\_move}.
+
+    \item \texttt{void canvas\_draw(Canvas *canvas, int time, int monitor\_id)}\\
+    Dibuja el estado del lienzo desde la perspectiva de un monitor específico. Imprime las figuras visibles dentro de los límites del monitor en el tiempo indicado.
+\end{itemize}
+
+\subsubsection*{Comportamiento}
+
+Durante la ejecución, el lienzo mantiene un conjunto de figuras que pueden tener distintos intervalos de actividad (definidos por \texttt{start\_time} y \texttt{end\_time}) y trayectorias de movimiento. Las actualizaciones se realizan por cada unidad de tiempo, y los monitores pueden observar secciones rectangulares del lienzo, imprimiendo el estado visible de las figuras.
+
+\subsubsection*{Ejemplo de Flujo}
+
+\begin{enumerate}
+    \item Se inicializa un lienzo con cierto tamaño.
+    \item Se añaden figuras y monitores al lienzo.
+    \item Por cada unidad de tiempo:
+    \begin{itemize}
+        \item Se llama a \texttt{canvas\_update} para mover las figuras activas.
+        \item Se llama a \texttt{canvas\_draw} por cada monitor para imprimir la vista parcial del lienzo.
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Módulo \texttt{parser}}
+
+El módulo \texttt{parser} se encarga de interpretar un archivo de texto que describe una animación compuesta por múltiples objetos, y de convertir dicha información en estructuras utilizables por el sistema.
+
+
+
+\subsubsection*{Funciones principales}
+
+\begin{itemize}
+    \item \texttt{Figure* object\_to\_figure(const Object *obj);} \\
+    Convierte un objeto de tipo \texttt{Object} en una figura de tipo \texttt{Figure}. Esta función es útil para traducir la representación abstracta a una figura que pueda ser procesada por el canvas.
+
+    \item \texttt{int parse\_animation(const char* filename, Animation* anim);} \\
+    Parsea el archivo de texto de entrada que contiene instrucciones sobre la animación. Llena la estructura \texttt{Animation} con la información de ancho, alto y objetos animados. Retorna la cantidad de objetos leídos.
+\end{itemize}
+
+\begin{itemize}
+    \item \textbf{parse\_animation:} Abre el archivo de animación, interpreta comandos como \texttt{CANVAS}, \texttt{OBJECT}, \texttt{CHAR}, \texttt{START}, \texttt{END}, \texttt{POSITION}, \texttt{MOVE TO} y \texttt{BOUNCE}, y almacena cada objeto en la estructura \texttt{Animation}.
+    
+    \item \textbf{draw\_canvas:} Dibuja en la consola el estado del canvas para un instante de tiempo determinado. Utiliza un arreglo bidimensional de caracteres para representar el lienzo y coloca los objetos activos en sus respectivas posiciones.
+    
+    \item \textbf{update\_objects:} Actualiza la posición de los objetos en función del tipo de movimiento (lineal o rebote) y del instante de tiempo actual.
+    
+    \item \textbf{run\_animation:} Ejecuta la animación completa desde el tiempo 0 hasta el máximo tiempo de finalización entre todos los objetos. Cada frame se dibuja cada 100 milisegundos.
+\end{itemize}
+
+\subsubsection*{Comandos soportados en el archivo de entrada}
+
+\begin{itemize}
+    \item \texttt{CANVAS width height}: Define el tamaño del lienzo.
+    \item \texttt{OBJECT id}: Inicia la definición de un nuevo objeto.
+    \item \texttt{CHAR c}: Carácter que representa al objeto.
+    \item \texttt{START t} y \texttt{END t}: Definen el intervalo de visibilidad del objeto.
+    \item \texttt{POSITION x y}: Posición inicial del objeto.
+    \item \texttt{MOVE TO x y DURATION t}: Movimiento lineal hacia una posición en un tiempo determinado.
+    \item \texttt{BOUNCE LIMITS x1 y1 x2 y2 SPEED dx dy}: Movimiento de rebote dentro de una región con velocidades definidas.
+\end{itemize}
+
+
+
+\subsection{Módulo \texttt{object\_to\_figure}}
+
+
+Este módulo tiene como objetivo convertir un objeto de tipo \texttt{Object}, que contiene información sobre una animación abstracta, en una estructura \texttt{Figure} que puede ser utilizada por el motor de renderizado. La conversión toma en cuenta el tipo de movimiento (lineal, rebote o ninguno), así como el tiempo de inicio y fin, el símbolo de representación, y otras propiedades necesarias para la animación visual.
+
+
+
+\subsubsection*{Funciones principales}
+
+\begin{itemize}
+  \item \textbf{\texttt{Figure* object\_to\_figure(const Object *obj);}}\\
+  Convierte un puntero a un \texttt{Object} en un puntero a una estructura \texttt{Figure} con los valores adaptados según el tipo de movimiento especificado en el objeto. Esta función reserva memoria dinámicamente para la figura generada y debe ser liberada manualmente cuando ya no se necesite.
+\end{itemize}
+
+\subsubsection*{Implementación}
+
+La función \texttt{object\_to\_figure} realiza lo siguiente:
+
+\begin{enumerate}
+  \item Inicializa una estructura \texttt{Figure} con valores por defecto.
+  \item Copia las coordenadas iniciales del objeto a la figura.
+  \item Dependiendo del tipo de movimiento definido en \texttt{obj->movement.type}, configura los parámetros de movimiento:
+  \begin{itemize}
+    \item Si el movimiento es \texttt{MOVE\_LINEAR}, se asignan los puntos inicial y final, además de la duración.
+    \item Si es \texttt{MOVE\_BOUNCE}, se copian las deltas de rebote (\texttt{dx}, \texttt{dy}).
+    \item Si no hay movimiento, se asigna el tipo \texttt{FIG\_MOVE\_NONE}.
+  \end{itemize}
+  \item Se copian los límites del movimiento (usualmente usados en rebote) y el tiempo de vida de la figura.
+  \item Se asigna el carácter visual y la etiqueta (\texttt{label}) de la figura usando \texttt{strncpy}.
+  \item Se reserva memoria dinámica para un puntero \texttt{Figure*} y se copia el contenido.
+  \item Finalmente, se imprime en consola un mensaje con los datos principales de la figura generada.
+\end{enumerate}
+
+\subsection{Módulo \texttt{monitor}}
+
+Este módulo define y gestiona un \texttt{Monitor}, el cual representa una región del lienzo (\texttt{Canvas}) que puede ser accedida de manera segura en entornos concurrentes mediante el uso de mutex. Su función principal es permitir visualizar el estado actual de una sección específica del lienzo en un momento dado.
+
+
+
+\subsubsection*{Estructuras}
+
+\begin{itemize}
+  \item \textbf{\texttt{Monitor}}\\
+  Representa una región rectangular del lienzo asociada a un \texttt{Canvas} y protegida por un mutex. Contiene las siguientes propiedades:
+  \begin{itemize}
+    \item \texttt{int x0, y0, x1, y1}: Coordenadas que definen los límites del monitor.
+    \item \texttt{Canvas *canvas}: Puntero al lienzo sobre el cual opera.
+    \item \texttt{my\_mutex\_t mutex}: Mutex para sincronizar el acceso concurrente.
+  \end{itemize}
+\end{itemize}
+
+\subsubsection*{Funciones principales}
+
+\begin{itemize}
+  \item \textbf{\texttt{void monitor\_init(Monitor *mon, int x0, int y0, int x1, int y1, Canvas *canvas);}}\\
+  Inicializa un monitor con las coordenadas especificadas y lo asocia con un lienzo determinado. También inicializa su mutex.
+
+  \item \textbf{\texttt{void monitor\_draw(Monitor *mon, int current\_time);}}\\
+  Dibuja en consola todas las figuras dentro de los límites del monitor que estén activas en el momento especificado por \texttt{current\_time}. El acceso al lienzo se realiza de forma segura mediante el uso de mutex.
+\end{itemize}
+
+\subsubsection*{implementación}
+
+\begin{enumerate}
+  \item \texttt{monitor\_init}:
+  \begin{itemize}
+    \item Asigna los límites \texttt{(x0, y0)} y \texttt{(x1, y1)} al monitor.
+    \item Asocia el puntero al \texttt{Canvas}.
+    \item Inicializa el mutex con \texttt{my\_mutex\_init}.
+    \item Imprime información del lienzo y del monitor para depuración.
+  \end{itemize}
+
+  \item \texttt{monitor\_draw}:
+  \begin{itemize}
+    \item Bloquea el mutex del monitor para acceder al canvas de forma segura.
+    \item Recorre todas las figuras en el canvas.
+    \item Imprime en consola únicamente aquellas figuras cuyas coordenadas actuales estén dentro de los límites del monitor.
+    \item Libera el mutex al finalizar la lectura.
+  \end{itemize}
+\end{enumerate}
+
+
+
+\subsection{\texttt{main.c}}
+
+
+El archivo \texttt{main.c} contiene el punto de entrada principal del sistema de animación. Se encarga de:
+\begin{itemize}
+  \item Leer y parsear el archivo de animación.
+  \item Inicializar el lienzo (\texttt{canvas}) y las figuras.
+  \item Crear e inicializar monitores que observarán diferentes regiones del lienzo.
+  \item Configurar y ejecutar el planificador de hilos (scheduler) para simular concurrencia.
+\end{itemize}
+
+
+
+\subsubsection*{Función \texttt{monitor\_loop}}
+Función que ejecuta cada hilo-monitor:
+\begin{itemize}
+  \item Cada hilo avanza el tiempo global de la animación desde 0 hasta 10.
+  \item En cada iteración, actualiza el estado del lienzo con \texttt{canvas\_update} y dibuja su porción con \texttt{canvas\_draw}.
+  \item Hace un \texttt{yield} para ceder el CPU y permitir la rotación entre hilos.
+\end{itemize}
+
+\subsubsection*{Función \texttt{main}}
+
+\textbf{Flujo de ejecución:}
+\begin{enumerate}
+  \item Se parsea el archivo \texttt{animation.ani} usando \texttt{parse\_animation}, almacenando la información en una estructura \texttt{Animation}.
+  \item Se inicializa el lienzo con las dimensiones definidas en la animación.
+  \item Se convierte cada objeto animado en una figura gráfica usando \texttt{object\_to\_figure}, y se añade al lienzo.
+  \item Se inicializan los monitores que observarán distintas secciones del lienzo, dividiéndolo equitativamente.
+  \item Se utiliza \texttt{my\_thread\_create} para crear un hilo por cada monitor.
+  \item Se inicializa el planificador con la política \texttt{ROUND\_ROBIN} y se ejecuta con \texttt{scheduler\_run}.
+\end{enumerate}
+
+
+
+
+
+
+
+
+\section{Instrucciones para ejecutar el programa}
+
+Para compilar y ejecutar el programa animador, siga los siguientes pasos desde la terminal:
+
+\subsection*{Compilación}
+
+\begin{verbatim}
+make clean && make all
+\end{verbatim}
+
+\subsection*{Ejecución}
+
+Ejecute el programa especificando el scheduler a usar:
+
+\begin{itemize}
+  \item Para utilizar \textbf{Round Robin}:
+  \begin{verbatim}
+./animador rr
+  \end{verbatim}
+
+  \item Para utilizar \textbf{Lottery Scheduling}:
+  \begin{verbatim}
+./animador lottery
+  \end{verbatim}
+
+  \item Para utilizar \textbf{Real-Time Scheduling}:
+  \begin{verbatim}
+./animador realtime
+  \end{verbatim}
+\end{itemize}
+
+\newpage
+\section{Actividades realizadas por estudiante}
+\begin{table}[H]
+\centering
+\caption{Bitácora de actividades - Manfred}
+\begin{tabular}{|l|p{9cm}|c|}
+\hline
+\textbf{Día} & \textbf{Actividad} & \textbf{Horas} \\
+\hline
+30/04/2025 & Reunión para ver el kickoff, introducción & 2 \\
+02/05/2025 & Clases del diagrama UML & 1 \\
+07/05/2025 & Reunión para ver la división de trabajo & 1 \\
+09/05/2025 - 12/05/2025 & Se trabajan las implementaciones de los tres tipos de schedulers con pthreads & 4 \\
+24/05/2025 & Se hace la definición del lenguaje, parser y función inicial de animación & 3 \\
+28/05/2025 & Se trabaja la inicialización, movimiento y colisión de figuras y las pruebas respectivas & 3.5 \\
+30/05/2025 & Se trabaja en la lógica de implementación de los 3 schedulers para mypthreads y sus pruebas respectivas & 3 \\
+31/05/2025 & Se inicia la redacción de la documentación & 2 \\
+01/06/2025 & Pruebas finales, se finaliza la documentación & 3 \\
+\hline
+\multicolumn{2}{|r|}{\textbf{Total:}} & \textbf{22.5} \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Bitácora de actividades - Miguel}
+\begin{tabular}{|l|p{9cm}|c|}
+\hline
+\textbf{Día} & \textbf{Actividad} & \textbf{Horas} \\
+\hline
+25/04/2025 & Reunión para ver el kickoff, introducción & 2 \\
+26/04/2025 & Clases del diagrama UML & 1 \\
+28/04/2025 & Reunión para ver la división de trabajo & 1 \\
+18/05/2025 & Implementación inicial de hilos con ucontext & 3 \\
+19/05/2025 & Implementación del scheduler Round Robin y pruebas básicas & 2 \\
+24/05/2025 & Mutex cooperativo: implementación y testeo inicial & 2 \\
+26/05/2025 & \texttt{my\_thread\_join}, mejoras a \texttt{mypthread}, refactor de código & 4 \\
+27/05/2025 & Organización del proyecto y limpieza de archivos & 1.5 \\
+29/05/2025 & Inicio del módulo de animación y estructuras base & 2 \\
+30/05/2025 & Canvas y monitores con animación; pruebas con figuras & 5 \\
+31/05/2025 & Correcciones en parser, integración con \texttt{object\_to\_figure}, Makefile, pruebas de compilación & 6 \\
+01/06/2025 & Finalización de \texttt{main}, animación funcional, bitácora y documentación & 3.5 \\
+\hline
+\multicolumn{2}{|r|}{\textbf{Total:}} & \textbf{33} \\
+\hline
+\end{tabular}
+\end{table}
+
+
+
+\begin{figure}[H]
+   \centering
+   \includegraphics[width=7in]{} 
+   \label{fig:1}
+\end{figure}
+
+
+
+
+\section{Autoevaluación}
+
+
+Se logró la reimplementación de la bibblioteca pthreads en mypthreads, se implementaron los 3 tipos de schedulers: round robin, lottery y realtime. Igualmente se definió un lenguaje de animación y se proporciona un archivo de texto que es leído por el parser, para así iniciar los hilos, el canvas y las figuras. Se intentó implementar la animación en múltiples displays pero no se logró en su completitud, ni así tampoco las figuras complejas y rotaciones.
+
+
+
+
+
+
+
+
+
+
+\subsection{Evaluación}
+\begin{itemize}
+    \item \textbf{Scheduler RoundRobin: 10}\\
+    
+    \item \textbf{Scheduler Sorteo: 10}\\
+
+    \item \textbf{Scheduler en Tiempo Real: 10}\\
+  
+     \item \textbf{Cambio de Scheduler: 8}\\
+    
+     \item \textbf{Funciones de la biblioteca pthreads: 9}\\
+   
+     \item \textbf{Documentación en LaTex: 10}\\
+
+     \item \textbf{Diseño del lenguaje: 8}\\
+
+     \item \textbf{Implementación de la animación: 7}\\
+
+     \item \textbf{Funcionamiento en multiples displays: 5}\\
+
+    \item \textbf{Kick-off: 10}\\
+\end{itemize}
+
+\subsection{Auto-evaluación}
+\begin{itemize}
+    \item \textbf{Aprendizaje de RoundRobin: 5/5}\\
+
+    \item \textbf{Aprendizaje de Tiempo Real: 5/5}\\
+ 
+    \item \textbf{Aprendizaje de cambio de contexto:  4/5}\\
+
+    \item \textbf{Aprendizaje de sorteo: 5/5}\\
+
+\end{itemize}
+\subsection{Reporte de commits}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Screenshot 2025-06-01 at 22.34.04.png}
+    \caption{Reporte de commits}
+    \label{fig:animador_run}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Screenshot 2025-06-01 at 22.34.13.png}
+    \caption{Cont. reporte de commits}
+    \label{fig:animador_run}
+\end{figure}
+
+  
+ 
+
+
+
+\section{Lecciones aprendidas}
+
+
+Llevar a cabo este proyecto brindó un aprendizaje importante sobre el manejo de hilos, al reimplementar la biblioteca pthreads desde cero. Además de tener un contacto de primera mano con algoritmos de planificación y cómo estos afectan el desempeño de nuestro programa.
+Para el desarrollo del lenguaje y parser fue necesario emplear conocimientos de cursos anteriores como lenguajes de programación y estructuras de datos. Se tuvo que tomar decisiones de diseño importantes a la hora de integrar el canvas, figuras e hilos.
+A pesar de los desafíos y el no poder implementar ciertas funcionalidades clave como los múltiples monitores y las figuras compuestas, este proyecto nos sirvió 
+
+\newpage
+
+\begin{thebibliography}{9}
+
+
+
+
+\bibitem{tanenbaum2015}
+Andrew S. Tanenbaum, \emph{Modern Operating Systems}, 3ª edición, Pearson, 2009.
+
+\bibitem{posix}
+IEEE, \emph{POSIX Threads Programming}. Disponible en: \url{https://pubs.opengroup.org/onlinepubs/9699919799/functions/pthread_create.html}. Accedido el 10 de mayo de 2025.
+
+\bibitem{ucontext}
+GNU Project, \emph{uContext - User-Level Context Switching}. Disponible en: \url{https://pubs.opengroup.org/onlinepubs/7908799/xsh/ucontext.h.html}. Accedido el 15 de mayo de 2025.
+
+\end{thebibliography}
+
+
+\end{document}
