@@ -28,6 +28,8 @@ typedef struct {
 
     char symbol;
     char label[32];
+
+    int active;
 } Figure;
 
 

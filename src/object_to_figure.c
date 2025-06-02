@@ -31,12 +31,14 @@ Figure* object_to_figure(const Object *obj) {
     fig.start_time = obj->start_time;
     fig.end_time = obj->end_time;
     fig.symbol = obj->display_char;
+    fig.active = 1;
     strncpy(fig.label, obj->id, sizeof(fig.label));
     fig.label[sizeof(fig.label) - 1] = '\0';
     Figure* fig_ptr = malloc(sizeof(Figure));
     if (fig_ptr) {
         *fig_ptr = fig;
     }
+        
     printf("Figura %s creada con tiempo [%d - %d], tipo %d\n", 
        obj->id, obj->start_time, obj->end_time, obj->movement.type);
   return fig_ptr;

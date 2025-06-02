@@ -20,5 +20,6 @@ void canvas_add_figure(Canvas *canvas, Figure *fig);
 void canvas_add_monitor(Canvas *canvas, struct Monitor *mon);
 void canvas_update(Canvas *canvas, int current_time);
 
+
 #endif
 

@@ -14,13 +14,15 @@
 extern Canvas canvas;
 extern int global_time;
 
+void draw_full_canvas(Canvas *canvas, int current_time);
+
 void monitor_loop(void) {
     my_thread_t tid = current_thread_id;
     for (int t = 0; t <= 10; t++) {
         global_time = t;
         canvas_update(&canvas, t);
-        canvas_draw(&canvas, t, tid);
-        //usleep(300000);
+        if (tid == 0) draw_full_canvas(&canvas, t); // Solo el primer hilo dibuja
+        usleep(300000);
         my_thread_yield();
     }
     my_thread_end();
