@@ -1,30 +1,52 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 #include "canvas.h"
+#include "monitor.h"
+#include "figure.h"
 
-void canvas_init(Canvas *canvas, int width, int height) {
-    canvas->width = width;
-    canvas->height = height;
-    canvas->figure_count = 0;
-    canvas->monitor_count = 0;
+int global_time = 0;
+Canvas canvas;
+
+void canvas_init(Canvas* c, int width, int height) {
+    c->width = width;
+    c->height = height;
+    c->figure_count = 0;
+    c->monitor_count = 0;
 }
 
-void canvas_add_figure(Canvas *canvas, Figure *fig) {
-    if (canvas->figure_count < MAX_FIGURES)
-        canvas->figures[canvas->figure_count++] = fig;
-}
-
-void canvas_add_monitor(Canvas *canvas, Monitor *mon) {
-    if (canvas->monitor_count < MAX_MONITORS)
-        canvas->monitors[canvas->monitor_count++] = mon;
-}
-
-void canvas_update(Canvas *canvas, int current_time) {
-    for (int i = 0; i < canvas->figure_count; i++) {
-        Figure *f = canvas->figures[i];
-        f->x += f->dx;
-        f->y += f->dy;
+void canvas_add_figure(Canvas* c, Figure* f) {
+    if (c->figure_count < MAX_FIGURES) {
+        c->figures[c->figure_count++] = f;
     }
+}
 
-    for (int i = 0; i < canvas->monitor_count; i++) {
-        monitor_draw(canvas->monitors[i], current_time);
+void canvas_add_monitor(Canvas* c, Monitor* m) {
+    if (c->monitor_count < MAX_MONITORS) {
+        c->monitors[c->monitor_count++] = m;
+    }
+}
+
+void canvas_update(Canvas* c, int time) {
+    for (int i = 0; i < c->figure_count; i++) {
+        Figure* fig = c->figures[i];
+        if (time >= fig->start_time && time <= fig->end_time) {
+            figure_move(fig);
+        }
+    }
+}
+
+void canvas_draw(Canvas* c, int time, int monitor_id) {
+    Monitor* m = c->monitors[monitor_id];
+    printf("Monitor (%d,%d) - (%d,%d) at time %d:\n", m->x0, m->y0, m->x1, m->y1, time);
+    for (int i = 0; i < c->figure_count; i++) {
+        Figure* fig = c->figures[i];
+        if (time >= fig->start_time && time <= fig->end_time) {
+            if (fig->x >= m->x0 && fig->x <= m->x1 &&
+                fig->y >= m->y0 && fig->y <= m->y1) {
+                printf(" - Figura %s (%c) en (%d, %d)\n", fig->label, fig->symbol, fig->x, fig->y);
+            }
+        }
     }
 }

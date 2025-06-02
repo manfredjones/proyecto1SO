@@ -7,7 +7,7 @@
 #include "object_to_figure.h"
 
 
-void parse_animation(const char* filename, Animation* anim) {
+int parse_animation(const char* filename, Animation* anim) {
     FILE* file = fopen(filename, "r");
     if (!file) {
         perror("Error al abrir archivo");
@@ -19,23 +19,33 @@ void parse_animation(const char* filename, Animation* anim) {
     int in_object = 0;
 
     while (fgets(line, sizeof(line), file)) {
+        line[strcspn(line, "\r\n")] = '\0';
         if (strncmp(line, "CANVAS", 6) == 0) {
             sscanf(line, "CANVAS %d %d", &anim->width, &anim->height);
+            
         } else if (strncmp(line, "OBJECT", 6) == 0) {
-            if (in_object) {
-                current.current_pos = current.position;
-                anim->objects[anim->object_count++] = current;
-            }
-            in_object = 1;
-            memset(&current, 0, sizeof(Object));
-            sscanf(line, "OBJECT %s", current.id);
-            current.movement.type = MOVE_NONE;
+                if (in_object) {
+                    current.current_pos = current.position;
+                    anim->objects[anim->object_count++] = current;
+                }
+                in_object = 1;
+
+                // Mover lectura del ID antes del memset
+                char temp_id[32];
+                sscanf(line, "OBJECT %s", temp_id);
+
+                memset(&current, 0, sizeof(Object));
+                strncpy(current.id, temp_id, sizeof(current.id) - 1);
+                current.id[sizeof(current.id) - 1] = '\0';
+                current.movement.type = MOVE_NONE;
         } else if (strncmp(line, "CHAR", 4) == 0) {
             sscanf(line, "CHAR %c", &current.display_char);
         } else if (strncmp(line, "START", 5) == 0) {
             sscanf(line, "START %d", &current.start_time);
+            printf("   ↳ START leído: %d\n", current.start_time);
         } else if (strncmp(line, "END", 3) == 0) {
             sscanf(line, "END %d", &current.end_time);
+            printf("   ↳ END leído: %d\n", current.end_time);
         } else if (strncmp(line, "POSITION", 8) == 0) {
             sscanf(line, "POSITION %d %d", &current.position.x, &current.position.y);
         } else if (strncmp(line, "MOVE TO", 7) == 0) {
@@ -56,6 +66,7 @@ void parse_animation(const char* filename, Animation* anim) {
     }
 
     fclose(file);
+    return anim->object_count;
 }
 
 void draw_canvas(Animation* anim, int time) {

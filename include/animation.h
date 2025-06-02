@@ -43,7 +43,7 @@ typedef struct {
     Object objects[MAX_OBJECTS];
 } Animation;
 
-void parse_animation(const char* filename, Animation* anim);
+int parse_animation(const char* filename, Animation* anim);
 void run_animation(Animation* anim);
 
 #endif

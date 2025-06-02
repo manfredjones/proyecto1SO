@@ -1,53 +1,64 @@
 #include <stdio.h>
-#include <unistd.h> 
-#include "animation.h"
+#include <stdlib.h>
+#include <unistd.h>
+#include "canvas.h"
+#include "monitor.h"
+#include "parser.h"
+#include "mypthread.h"
+#include "scheduler.h"
+#include "object_to_figure.h"
 
-void print_canvas(Animation* anim) {
-    char canvas[100][100];
+#define MONITOR_ROWS 2
+#define MONITOR_COLS 2
 
-    // Limpiar canvas
-    for (int y = 0; y < anim->height; y++) {
-        for (int x = 0; x < anim->width; x++) {
-            canvas[y][x] = ' ';
-        }
+extern Canvas canvas;
+extern int global_time;
+
+void monitor_loop(void) {
+    my_thread_t tid = current_thread_id;
+    for (int t = 0; t <= 10; t++) {
+        global_time = t;
+        canvas_update(&canvas, t);
+        canvas_draw(&canvas, t, tid);
+        //usleep(300000);
+        my_thread_yield();
     }
-
-    // Dibujar objetos en su posición inicial
-    for (int i = 0; i < anim->object_count; i++) {
-        Object obj = anim->objects[i];
-        int x = obj.position.x;
-        int y = obj.position.y;
-
-        if (x >= 0 && x < anim->width && y >= 0 && y < anim->height) {
-            canvas[y][x] = obj.display_char;
-        }
-    }
-
-    // Imprimir canvas
-    for (int y = 0; y < anim->height; y++) {
-        for (int x = 0; x < anim->width; x++) {
-            putchar(canvas[y][x]);
-        }
-        putchar('\n');
-    }
+    my_thread_end();
 }
 
 int main() {
     Animation anim;
-    parse_animation("animation.ani", &anim);
+    int object_count = parse_animation("build/animation.ani", &anim);
 
-    printf("Objetos cargados: %d\n", anim.object_count);
-for (int i = 0; i < anim.object_count; i++) {
-    printf("Objeto %d: %s, char: %c, pos: (%d, %d)\n",
-        i,
-        anim.objects[i].id,
-        anim.objects[i].display_char,
-        anim.objects[i].position.x,
-        anim.objects[i].position.y
-    );
-}
+    canvas_init(&canvas, anim.width, anim.height);
 
-    print_canvas(&anim);
+    for (int i = 0; i < object_count; i++) {
+        Figure *fig = object_to_figure(&anim.objects[i]);
+        canvas_add_figure(&canvas, fig);
+    }
+
+    int mon_width = canvas.width / MONITOR_COLS;
+    int mon_height = canvas.height / MONITOR_ROWS;
+    my_thread_t tids[MAX_MONITORS];
+    int id = 0;
+
+    scheduler_init(ROUND_ROBIN);
+
+    for (int i = 0; i < MONITOR_ROWS; i++) {
+        for (int j = 0; j < MONITOR_COLS; j++) {
+            Monitor *mon = malloc(sizeof(Monitor));
+            int x0 = j * mon_width;
+            int y0 = i * mon_height;
+            int x1 = x0 + mon_width - 1;
+            int y1 = y0 + mon_height - 1;
+            monitor_init(mon, x0, y0, x1, y1, &canvas);
+            canvas_add_monitor(&canvas, mon);
+            my_thread_create(&tids[id], monitor_loop, ROUND_ROBIN);
+            id++;
+        }
+    }
+
+    scheduler_run();
 
     return 0;
 }

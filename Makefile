@@ -4,7 +4,9 @@ LDFLAGS =
 BUILD_DIR = build
 SRC_DIR = src
 OBJ_DIR = $(BUILD_DIR)/obj
-BIN = $(BUILD_DIR)/animator
+BIN = $(BUILD_DIR)/animation
+ANI_SRC = $(SRC_DIR)/animation.ani
+ANI_DST = $(BUILD_DIR)/animation.ani
 
 SOURCES = $(wildcard $(SRC_DIR)/*.c)
 OBJECTS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SOURCES))
@@ -15,7 +17,7 @@ all: $(BIN)
 
 $(BIN): $(OBJECTS)
 	@mkdir -p $(dir $@)
-	cp $(SRC_DIR)/animation.ani $(BUILD_DIR)/animation.ani
+	cp $(ANI_SRC) $(ANI_DST)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
@@ -27,4 +29,3 @@ run: all
 
 clean:
 	rm -rf $(BUILD_DIR)
-

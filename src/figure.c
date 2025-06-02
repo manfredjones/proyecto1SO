@@ -1,26 +1,40 @@
 #include "../include/figure.h"
 
-void figure_move(Figure *fig, int maxWidth, int maxHeight) {
-    fig->x += fig->dx;
-    fig->y += fig->dy;
 
-    // Rebote en los bordes
-    if (fig->x < 0) {
-        fig->x = 0;
-        fig->dx *= -1;
-    } else if (fig->x >= maxWidth) {
-        fig->x = maxWidth - 1;
-        fig->dx *= -1;
-    }
+void figure_move(Figure *fig) {
+    extern int global_time;
+    if (global_time < fig->start_time || global_time > fig->end_time)
+        return;
 
-    if (fig->y < 0) {
-        fig->y = 0;
-        fig->dy *= -1;
-    } else if (fig->y >= maxHeight) {
-        fig->y = maxHeight - 1;
-        fig->dy *= -1;
+    if (fig->move_type == FIG_MOVE_BOUNCE) {
+        fig->x += fig->dx;
+        fig->y += fig->dy;
+
+        if (fig->x < fig->x1 || fig->x > fig->x2) {
+            fig->dx *= -1;
+            fig->x += fig->dx;
+        }
+        if (fig->y < fig->y1 || fig->y > fig->y2) {
+            fig->dy *= -1;
+            fig->y += fig->dy;
+        }
+
+    } else if (fig->move_type == FIG_MOVE_LINEAR) {
+        float total_secs = fig->duration_ms / 1000.0f;
+        float elapsed = global_time - fig->start_time;
+        if (elapsed > total_secs) elapsed = total_secs;
+        if (elapsed < 0) elapsed = 0;
+
+        float t = elapsed / total_secs;
+
+        fig->x = fig->x_start + (int)((fig->x_end - fig->x_start) * t);
+        fig->y = fig->y_start + (int)((fig->y_end - fig->y_start) * t);
+
+    } else {
+        // FIG_MOVE_NONE: no hacer nada
     }
 }
+
 
 int figure_collides(const Figure *a, const Figure *b) {
     return (a->x == b->x) && (a->y == b->y);
