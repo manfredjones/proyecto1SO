@@ -4,8 +4,7 @@
 #include "figure.h"
 #include "animation.h"
 
-Figure* object_to_figure(const Object *obj);
-
+// Carga una animación desde archivo .ani
 int parse_animation(const char* filename, Animation* anim);
 
 #endif

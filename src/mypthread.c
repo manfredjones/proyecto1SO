@@ -7,12 +7,14 @@
 #define MAX_THREADS 64
 #define STACK_SIZE 8192
 
-extern my_thread_t current_thread_id;
+// ID del hilo que está actualmente en ejecución
+my_thread_t current_thread_id = -1;
 
-// Tabla global de hilos
+// Tabla de control de hilos
 thread_control_block thread_table[MAX_THREADS];
 int thread_count = 0;
 
+// Crea un nuevo hilo con el scheduler especificado
 int my_thread_create(my_thread_t *thread, void (*start_routine)(void), int scheduler_type) {
     if (thread_count >= MAX_THREADS)
         return -1;
@@ -20,15 +22,15 @@ int my_thread_create(my_thread_t *thread, void (*start_routine)(void), int sched
     int id = thread_count;
     thread_control_block *tcb = &thread_table[id];
 
-    // Crear un nuevo contexto
+    // Inicializar contexto del hilo
     tcb->waiting_thread_id = -1;
     getcontext(&tcb->context);
     tcb->context.uc_stack.ss_sp = tcb->stack;
     tcb->context.uc_stack.ss_size = STACK_SIZE;
-    tcb->context.uc_link = NULL;  // cuando termine, se finaliza el hilo
+    tcb->context.uc_link = NULL;  // Al terminar, el hilo finaliza
     makecontext(&tcb->context, start_routine, 0);
 
-    // Inicializar datos del hilo
+    // Inicializar metadatos del hilo
     tcb->id = id;
     tcb->state = READY;
     tcb->retval = NULL;
@@ -38,41 +40,40 @@ int my_thread_create(my_thread_t *thread, void (*start_routine)(void), int sched
     *thread = id;
     thread_count++;
 
-    // Registrar el hilo en el scheduler correspondiente
-    scheduler_add(id);  // aquí debes hacer que el scheduler sepa a qué tipo pertenece
+    // Registrar el hilo en el scheduler
+    scheduler_add(id);
 
     return 0;
 }
 
+// Termina el hilo actual y transfiere el control al siguiente
 void my_thread_end() {
     thread_control_block *current = &thread_table[current_thread_id];
     current->state = FINISHED;
+
     if (current->detached) {
-    // En una versión más realista se liberarían recursos,
-    // pero como estamos en espacio de usuario, no es necesario ahora.
-    // Solo evitamos que nadie lo espere.
-    current->waiting_thread_id = -1;
-}
+        // Evitar que otros hilos esperen este hilo
+        current->waiting_thread_id = -1;
+    }
 
-
-    // Si alguien está esperando a este hilo, desbloquearlo
+    // Desbloquear al hilo que estaba esperando (si aplica)
     if (current->waiting_thread_id != -1) {
         thread_table[current->waiting_thread_id].state = READY;
         current->waiting_thread_id = -1;
     }
 
-
+    // Seleccionar el siguiente hilo listo
     int next_id = scheduler_next();
     if (next_id == -1) {
-        exit(0);  // No hay más hilos listos
+        exit(0);  // No quedan hilos
     }
 
     thread_table[next_id].state = RUNNING;
     current_thread_id = next_id;
     setcontext(&thread_table[next_id].context);
 }
-my_thread_t current_thread_id = -1;
 
+// Cede el control a otro hilo según el scheduler
 void my_thread_yield() {
     int next_id = scheduler_next();
     if (next_id == current_thread_id || next_id == -1)
@@ -90,30 +91,26 @@ void my_thread_yield() {
     swapcontext(&current->context, &next->context);
 }
 
+// Espera a que un hilo termine su ejecución
 int my_thread_join(my_thread_t thread_id) {
-    // 1. Verificamos que el ID sea válido
     if (thread_id < 0 || thread_id >= thread_count)
         return -1;
 
     thread_control_block *target = &thread_table[thread_id];
 
-    // 2. Si ya terminó, no hay que esperar
     if (target->state == FINISHED)
         return 0;
 
-    // 3. Guardamos el hilo que espera en el hilo objetivo
     target->waiting_thread_id = current_thread_id;
-
-    // 4. Marcamos al hilo actual como bloqueado
     thread_table[current_thread_id].state = BLOCKED;
 
-    // 5. Cedemos el control a otro hilo
     while (target->state != FINISHED)
-    my_thread_yield();
+        my_thread_yield();
 
     return 0;
 }
 
+// Marca un hilo como detach (no será esperado por nadie)
 int my_thread_detach(my_thread_t thread_id) {
     if (thread_id < 0 || thread_id >= thread_count)
         return -1;
@@ -123,6 +120,7 @@ int my_thread_detach(my_thread_t thread_id) {
     return 0;
 }
 
+// Inicializa un mutex
 int my_mutex_init(my_mutex_t *mutex) {
     if (!mutex) return -1;
     mutex->locked = 0;
@@ -130,6 +128,7 @@ int my_mutex_init(my_mutex_t *mutex) {
     return 0;
 }
 
+// Destruye un mutex
 int my_mutex_destroy(my_mutex_t *mutex) {
     if (!mutex) return -1;
     mutex->locked = 0;
@@ -137,19 +136,19 @@ int my_mutex_destroy(my_mutex_t *mutex) {
     return 0;
 }
 
+// Intenta adquirir un mutex bloqueando si está ocupado
 int my_mutex_lock(my_mutex_t *mutex) {
     if (!mutex) return -1;
 
     while (__sync_lock_test_and_set(&mutex->locked, 1)) {
-        // Ya está bloqueado, ceder turno (cooperativamente)
-        my_thread_yield();
+        my_thread_yield();  // Espera cooperativa
     }
 
-    // Éxito al adquirirlo
     mutex->owner = current_thread_id;
     return 0;
 }
 
+// Libera un mutex si el hilo actual es el dueño
 int my_mutex_unlock(my_mutex_t *mutex) {
     if (!mutex || mutex->owner != current_thread_id) return -1;
 
@@ -158,11 +157,13 @@ int my_mutex_unlock(my_mutex_t *mutex) {
     return 0;
 }
 
+// Intenta adquirir un mutex sin bloquear (incompleto)
 int my_mutex_trylock(my_mutex_t *mutex) {
-    // TODO: Intentar bloquear el mutex sin bloquearse
+    // Implementación pendiente
     return 0;
 }
 
+// Cambia el tipo de scheduler asociado a un hilo
 int my_thread_chsched(my_thread_t thread, int scheduler_type) {
     if (thread < 0 || thread >= thread_count)
         return -1;

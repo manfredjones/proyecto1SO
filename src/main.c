@@ -15,23 +15,25 @@
 extern Canvas canvas;
 extern int global_time;
 
-void draw_full_canvas(Canvas *canvas, int current_time);
+// Bucle principal de cada hilo monitor: actualiza y dibuja su región del canvas
+void draw_full_canvas(Canvas *canvas, int current_time);  // Dibuja el canvas completo (solo el primer hilo lo hace)
 
 void monitor_loop(void) {
     my_thread_t tid = current_thread_id;
     for (int t = 0; t <= 10; t++) {
         global_time = t;
-        canvas_update(&canvas, t);
-        if (tid == 0) draw_full_canvas(&canvas, t);
-        usleep(300000);
-        my_thread_yield();
+        canvas_update(&canvas, t);  // Mueve figuras y detecta colisiones
+        if (tid == 0) draw_full_canvas(&canvas, t);  // Solo el primer hilo dibuja la vista completa
+        usleep(300000);  // Espera 300 ms entre frames
+        my_thread_yield();  // Cede el turno al siguiente hilo
     }
-    my_thread_end();
+    my_thread_end();  // Finaliza el hilo
 }
 
 int main(int argc, char *argv[]) {
     SchedulerType tipo = ROUND_ROBIN;
 
+    // Permitir selección de scheduler desde la línea de comandos
     if (argc > 1) {
         if (strcmp(argv[1], "lottery") == 0) tipo = LOTTERY;
         else if (strcmp(argv[1], "realtime") == 0) tipo = REAL_TIME;
@@ -40,6 +42,7 @@ int main(int argc, char *argv[]) {
 
     scheduler_init(tipo);
 
+    // Cargar archivo de animación y configurar el canvas
     Animation anim;
     int object_count = parse_animation("build/animation.ani", &anim);
     canvas_init(&canvas, anim.width, anim.height);
@@ -49,6 +52,7 @@ int main(int argc, char *argv[]) {
         canvas_add_figure(&canvas, fig);
     }
 
+    // Crear y distribuir monitores sobre el canvas
     int mon_width = canvas.width / MONITOR_COLS;
     int mon_height = canvas.height / MONITOR_ROWS;
     my_thread_t tids[MAX_MONITORS];
@@ -68,6 +72,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    // Inicia la ejecución de los hilos según el scheduler seleccionado
     scheduler_run();
     return 0;
 }
